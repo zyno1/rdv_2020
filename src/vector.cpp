@@ -57,7 +57,7 @@ Vector Vector::normalize() const {
 Vector operator+(Vector const& a, Vector const& b) {
     Vector res(a);
     res += b;
-    return b;
+    return res;
 }
 
 Vector operator-(Vector const& a, Vector const& b) {
@@ -82,6 +82,12 @@ Vector operator*(float b, Vector const& a) {
 
 float operator*(Vector const& a, Vector const& b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+Vector operator/(Vector const& a, float b) {
+    Vector res(a);
+    res /= b;
+    return res;
 }
 
 Vector cross(Vector const& a, Vector const& b) {

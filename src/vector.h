@@ -31,6 +31,8 @@ Vector operator-(Vector const& a);
 Vector operator*(Vector const& a, float b);
 Vector operator*(float b, Vector const& a);
 
+Vector operator/(Vector const& a, float b);
+
 float operator*(Vector const& a, Vector const& b);
 
 Vector cross(Vector const& a, Vector const& b);
