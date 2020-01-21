@@ -25,12 +25,12 @@ size_t Pixmap::size() const {
     return w * h * 3;
 }
 
-unsigned char Pixmap::get(size_t i) const {
+unsigned char& Pixmap::operator[](const size_t i) {
     return map[i];
 }
 
-void Pixmap::set(size_t i, unsigned char c) {
-    map[i] = c;
+const unsigned char& Pixmap::operator[](const size_t i) const {
+    return map[i];
 }
 
 size_t Pixmap::getW() const {
@@ -41,12 +41,18 @@ size_t Pixmap::getH() const {
     return h;
 }
 
+unsigned char* Pixmap::data() {
+    return map.data();
+}
+
+const unsigned char* Pixmap::data() const {
+    return map.data();
+}
+
 std::ostream& operator<<(std::ostream& out, Pixmap const& map) {
     out << "P6\n" << map.getW() << " " << map.getH() << "\n255\n";
 
-    for(size_t i = 0; i < map.size(); i++) {
-        out << (char)map.get(i);
-    }
+    out.write((const char*)map.data(), map.size());
 
     return out;
 }

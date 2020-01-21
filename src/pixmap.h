@@ -22,8 +22,11 @@ class Pixmap {
     size_t getH() const;
 
     size_t size() const;
-    unsigned char get(size_t i) const;
-    void set(size_t i, unsigned char c);
+    unsigned char& operator[](const size_t i);
+    const unsigned char& operator[](const size_t i) const;
+
+    unsigned char* data();
+    const unsigned char* data() const;
 };
 
 std::ostream& operator<<(std::ostream& out, Pixmap const& map);

@@ -18,7 +18,7 @@ int main() {
     }
 
     for(size_t i = 325; i < 375; i++) {
-        p.set(i*3, 255);
+        p[i*3] = 255;
     }
 
     out << p;
