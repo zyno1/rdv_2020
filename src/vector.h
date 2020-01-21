@@ -23,6 +23,8 @@ class Vector {
 
     float& operator[](const std::size_t i);
     const float& operator[](const std::size_t i) const;
+
+    Vector& operator=(Vector const& b);
 };
 
 Vector operator+(Vector const& a, Vector const& b);

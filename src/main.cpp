@@ -3,27 +3,18 @@
 
 #include "pixmap.h"
 #include "vector.h"
+#include "matrix.h"
 
 int main() {
-    auto out = std::ofstream("file.ppm", std::ios::binary);
+    Matrix m(4, 4);
 
-    Pixmap p(100, 90);
+    std::cout << m << std::endl;
 
-    Vector c(0, 0.4f, 0);
+    m = Matrix::identity(4, 4);
+    std::cout << m << std::endl;
 
-    for(size_t j = 0; j < p.getH(); j++) {
-        for(size_t i = 0; i < p.getW(); i++) {
-            p.setPixel(i, j, c);
-        }   
-    }
-
-    for(size_t i = 325; i < 375; i++) {
-        p[i*3] = 255;
-    }
-
-    out << p;
-
-    out.close();
+    m.set(0, 1, 14);
+    std::cout << m << std::endl;
 
     return 0;
 }
