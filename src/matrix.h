@@ -5,6 +5,8 @@
 #include<vector>
 #include<iostream>
 
+#include "vector.h"
+
 class Matrix {
     public:
     size_t w;
@@ -25,12 +27,20 @@ class Matrix {
     float& operator[](const size_t i);
     const float& operator[](const size_t i) const;
 
-    static Matrix identity(size_t w, size_t h);
-
     Matrix& operator=(Matrix const& b);
+
+    static Matrix identity(size_t w, size_t h);
+    static Matrix translate(float x, float y, float z);
+    static Matrix zoom(float c);
+    static Matrix rotateX(float a);
+    static Matrix rotateY(float a);
+    static Matrix rotateZ(float a);
 };
 
 Matrix operator*(Matrix const& a, Matrix const& b);
+
+Vector operator*(Matrix const& a, Vector const& b);
+Vector operator*(Vector const& a, Matrix const& b);
 
 std::ostream& operator<<(std::ostream& out, Matrix const& matrix);
 

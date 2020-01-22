@@ -1,6 +1,7 @@
 #include "matrix.h"
 
 #include<algorithm>
+#include<cmath>
 
 Matrix::Matrix(size_t W, size_t H) : w(W), h(H), m(W * H) {
     for(size_t i = 0; i < w * h; i++) {
@@ -54,6 +55,59 @@ Matrix Matrix::identity(size_t w, size_t h) {
     return res;
 }
 
+Matrix Matrix::translate(float x, float y, float z) {
+    Matrix res = Matrix::identity(4, 4);
+
+    res.set(0, 3, x);
+    res.set(1, 3, y);
+    res.set(2, 3, z);
+
+    return res;
+}
+
+Matrix Matrix::zoom(float c) {
+    Matrix res = Matrix::identity(4, 4);
+
+    res.set(0, 0, c);
+    res.set(1, 1, c);
+    res.set(2, 2, c);
+
+    return res;
+}
+
+Matrix Matrix::rotateX(float a) {
+    Matrix res = Matrix::identity(4, 4);
+
+    res.set(1, 1, cos(a));
+    res.set(1, 2, -sin(a));
+    res.set(2, 1, sin(a));
+    res.set(2, 2, cos(a));
+
+    return res;
+}
+
+Matrix Matrix::rotateY(float a) {
+    Matrix res = Matrix::identity(4, 4);
+
+    res.set(0, 0, cos(a));
+    res.set(0, 2, sin(a));
+    res.set(2, 0, -sin(a));
+    res.set(2, 2, cos(a));
+
+    return res;
+}
+
+Matrix Matrix::rotateZ(float a) {
+    Matrix res = Matrix::identity(4, 4);
+
+    res.set(0, 0, cos(a));
+    res.set(0, 1, -sin(a));
+    res.set(1, 0, sin(a));
+    res.set(1, 1, cos(a));
+
+    return res;
+}
+
 Matrix& Matrix::operator=(Matrix const& b) {
     w = b.w;
     h = b.h;
@@ -82,6 +136,36 @@ Matrix operator*(Matrix const& a, Matrix const& b) {
 
     return res;
 }
+
+Vector operator*(Matrix const& a, Vector const& b) {
+    Vector res;
+    res.w = 1;
+
+    for(size_t j = 0; j < a.getH(); j++) {
+        float tmp = 0;
+        for(size_t i = 0; i < a.getW(); i++) {
+            tmp += a.get(j, i) * b[i];
+        }
+        res[j] = tmp;
+    }
+
+    return res;
+}
+
+Vector operator*(Vector const& a, Matrix const& b) {
+    Vector res;
+
+    for(size_t i = 0; i < b.getW(); i++) {
+        float tmp = 0;
+        for(size_t j = 0; j < b.getH(); j++) {
+            tmp += a[j] * b.get(j, i);
+        }
+        res[i] = tmp;
+    }
+
+    return res;
+}
+
 
 std::ostream& operator<<(std::ostream& out, Matrix const& matrix) {
     out << "Matrix(";

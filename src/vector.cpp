@@ -52,6 +52,10 @@ const float& Vector::operator[](const std::size_t i) const {
     return i == 0 ? x : (1 == i ? y : (2 == i ? z : w));
 }
 
+size_t Vector::size() const {
+    return 3;
+}
+
 Vector Vector::normalize() const {
     Vector res(*this);
     res /= res.length();
