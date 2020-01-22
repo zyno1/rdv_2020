@@ -3,6 +3,7 @@
 #include<fstream>
 #include<iostream>
 #include<sstream>
+#include<algorithm>
 
 Model::Model(std::string const& file) {
     std::fstream in(file, std::ifstream::in);
@@ -32,6 +33,7 @@ Model::Model(std::string const& file) {
             while (iss >> idx) {
                 idx--; // in wavefront obj all indices start at 1, not zero
                 f.push_back(idx);
+                cnt++;
             }
             if (3==cnt) faces.push_back(f);
         }
@@ -62,4 +64,26 @@ Vector& Model::getVertice(size_t fi, size_t j) {
 
 const Vector& Model::getVertice(size_t fi, size_t j) const {
     return vertices[faces[fi][j]];
+}
+
+std::ostream& operator<<(std::ostream& out, Model const& m) {
+    out << "Model(";
+
+    Vector min = m.getVertice(0);
+    Vector max = m.getVertice(0);
+
+    for(size_t i = 0; i < m.getNbVertices(); i++) {
+        const Vector& tmp = m.getVertice(i);
+
+        for(size_t j = 0; j < 3; j++) {
+            min[j] = std::min(min[j], tmp[j]);
+            max[j] = std::max(max[j], tmp[j]);
+        }
+    }
+
+    out << "nb vertices: " << m.getNbVertices() << ", nb faces: " << m.getNbFaces();
+    out << ", min: " << min << ", max: " << max;
+
+    out << ")";
+    return out;
 }

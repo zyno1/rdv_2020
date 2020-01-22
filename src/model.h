@@ -24,4 +24,6 @@ class Model {
     const Vector& getVertice(size_t fi, size_t j) const;
 };
 
+std::ostream& operator<<(std::ostream& out, Model const& m);
+
 #endif

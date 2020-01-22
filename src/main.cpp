@@ -34,5 +34,9 @@ int main() {
     std::cout << "r*s: " << r*s << std::endl;
     std::cout << "s*r: " << s*r << std::endl;
 
+    Model model("data/duck.obj");
+
+    std::cout << model << std::endl;
+
     return 0;
 }
