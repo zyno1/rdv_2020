@@ -8,6 +8,10 @@ Vector::Vector(float X, float Y, float Z) : x(X), y(Y), z(Z), w(1) {
 Vector::Vector(Vector const& v) : x(v.x), y(v.y), z(v.z), w(v.w) {
 }
 
+Vector::Vector() : x(0), y(0), z(0), w(1) {
+    
+}
+
 float Vector::length() const {
     return sqrt(x * x + y * y + z * z);
 }

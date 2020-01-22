@@ -4,6 +4,7 @@
 #include "pixmap.h"
 #include "vector.h"
 #include "matrix.h"
+#include "model.h"
 
 int main() {
     Matrix m(4, 4);

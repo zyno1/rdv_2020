@@ -10,6 +10,7 @@ class Vector {
 
     Vector(float X, float Y, float Z);
     Vector(Vector const& v);
+    Vector();
 
     float length() const;
 
