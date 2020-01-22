@@ -30,6 +30,8 @@ class Matrix {
     Matrix& operator=(Matrix const& b);
 };
 
+Matrix operator*(Matrix const& a, Matrix const& b);
+
 std::ostream& operator<<(std::ostream& out, Matrix const& matrix);
 
 #endif

@@ -67,11 +67,34 @@ Matrix& Matrix::operator=(Matrix const& b) {
     return *this;
 }
 
+Matrix operator*(Matrix const& a, Matrix const& b) {
+    Matrix res(b.getW(), a.getH());
+
+    for(size_t j = 0; j < res.getH(); j++) {
+        for(size_t i = 0; i < res.getW(); i++) {
+            float tmp = 0;
+            for(size_t k = 0; k < a.getW(); k++) {
+                tmp += a.get(j, k) * b.get(k, i);
+            }
+            res.set(j, i, tmp);
+        }
+    }
+
+    return res;
+}
+
 std::ostream& operator<<(std::ostream& out, Matrix const& matrix) {
     out << "Matrix(";
 
     for(size_t i = 0; i < matrix.size() - 1; i++) {
-        out << matrix[i] << ", ";
+        out << matrix[i];
+
+        if((i + 1) % matrix.getW() == 0) {
+            out << "| ";
+        }
+        else {
+            out << ", ";
+        }
     }
 
     if(matrix.size() > 0) {
