@@ -38,7 +38,7 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
     for(size_t i = 0; i < model.getNbFaces(); i++) {
         std::vector<Vector> v;
         for(size_t j = 0; j < 3; j++) {
-            v.push_back((matrix * model.getVertice(i, j)) * posCalc + Vector(posCalc, posCalc, 0));
+            v.push_back(matrix * model.getVertice(i, j));
         }
 
         Vector min = v[0];
@@ -52,14 +52,17 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
             max.y = std::max(max.y, v[j].y);
         }
 
+        min = (min * posCalc) + Vector(posCalc, posCalc, 0);
+        max = (max * posCalc) + Vector(posCalc, posCalc, 0);
+
         size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
         size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
-        size_t maxx = (size_t)std::max(0, std::min((int)pixmap.getW() - 1, (int)max.x));
-        size_t maxy = (size_t)std::max(0, std::min((int)pixmap.getH() - 1, (int)max.y));
+        size_t maxx = (size_t)std::max(0, std::min((int)pixmap.getW() - 1, (int)max.x + 1));
+        size_t maxy = (size_t)std::max(0, std::min((int)pixmap.getH() - 1, (int)max.y + 1));
 
         for(size_t y = miny; y < maxy; y++) {
             for(size_t x = minx; x < maxx; x++) {
-                if(pointInTriangle(Vector(x, y, 0), v[0], v[1], v[2])) {
+                if(pointInTriangle(Vector((x - posCalc) / posCalc, (y - posCalc) / posCalc, 0), v[0], v[1], v[2])) {
                     pixmap.setPixel(x, y, color);
                 }
             }
