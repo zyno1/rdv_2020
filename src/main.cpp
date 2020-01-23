@@ -28,7 +28,8 @@ bool pointInTriangle (Vector pt, Vector v1, Vector v2, Vector v3)
 
 void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
     const Vector color(1.0f, 0.5f, 0.5f);
-    const Vector light(1.f, 1.f, 1.f);
+    const Vector light(-1.f, 1.f, 1.f);
+    float light_intensity = 1.f;
 
     std::vector<float> zbuffer;
     for(size_t i = 0; i < pixmap.getW() * pixmap.getH(); i++) {
@@ -78,7 +79,8 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
                 Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
 
                 Vector light_dir = (light - point).normalize();
-                float diffuse_light_intensity  = 1 * std::max(0.f, light_dir*N);
+                float diffuse_light_intensity  = light_intensity * std::max(0.f, light_dir*N);
+                //float specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.specular_exponent) * light_intensity;
 
                 size_t j = y * pixmap.getW() + x;
                 if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
@@ -97,7 +99,7 @@ int main() {
 
     m = Matrix::zoom(0.2f) * m;
     //m = Matrix::rotateY(-1.f) * m;
-    //m = Matrix::translate(-1.0f, 0, 0) * m;
+    //m = Matrix::translate(0, 0, 0) * m;
 
     std::cout << model << std::endl;
 
