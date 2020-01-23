@@ -1,38 +1,54 @@
 #include<iostream>
-#include<fstream>
+#include<algorithm>
 
 #include "pixmap.h"
 #include "vector.h"
 #include "matrix.h"
 #include "model.h"
 
+void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
+    const Vector color(1.0f, 0.5f, 0.5f);
+
+    for(size_t i = 0; i < pixmap.size(); i++) {
+        pixmap[i] = 50;
+    }
+
+    float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
+
+    for(size_t i = 0; i < model.getNbVertices(); i++) {
+        Vector tmp = matrix * model.getVertice(i);
+        tmp *= posCalc;
+
+        int x = tmp.x + posCalc;
+        int y = tmp.y + posCalc;
+
+        if(x >= 0 && x < pixmap.getW() && y >= 0 && y < pixmap.getH()) {
+            for(int i = 0; i < 3; i++) {
+                for(int j = 0; j < 3; j++) {
+                    int tmpx = std::max(0, std::min((int)pixmap.getW() - 1, x + i));
+                    int tmpy = std::max(0, std::min((int)pixmap.getH() - 1, y + j));
+
+                    pixmap.setPixel(tmpx, tmpy, color);
+                }
+            }
+        }
+    }
+}
+
 int main() {
     Matrix m = Matrix::identity(4, 4);
-    Matrix r = Matrix::identity(4, 4);
-    Matrix t = Matrix::identity(4, 4);
+    Model model("data/duck.obj");
+    Pixmap pixmap(1024, 1024);
 
-    t = t * Matrix::translate(2, 1.5f, -4);
-    r = Matrix::rotateZ(3.1415f / 6);
+    m = Matrix::zoom(0.2f) * m;
+    //m = Matrix::rotateZ(-2.f) * m;
+    m = Matrix::translate(-1.0f, 0, 0) * m;
 
-    m = t * r;
+    std::cout << model << std::endl;
 
-    Vector i1(0, 0, 0);
-    Vector i2(1, 0, 0);
-    Vector i3(0, 1, 0);
-    Vector i4(0, 0, 1);
+    render(model, m, pixmap);
 
-    std::cout << "m: " << m << std::endl;
-    std::cout << "r: " << r << std::endl;
-    std::cout << "t: " << t << std::endl;
-
-    std::cout << "i1: " << i1 << std::endl;
-    std::cout << "i2: " << i2 << std::endl;
-    std::cout << "i3: " << i3 << std::endl;
-    std::cout << "i4: " << i4 << std::endl;
-
-    std::cout << i2 << std::endl;
-    std::cout << r * i2 << std::endl;
-    std::cout << m * i2 << std::endl;
+    pixmap.writeToFile("res.ppm");
 
     return 0;
 }

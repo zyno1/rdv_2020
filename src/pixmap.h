@@ -2,6 +2,7 @@
 #define PIXMAP_H
 
 #include<vector>
+#include<string>
 #include<cstdlib>
 
 #include "vector.h"
@@ -27,6 +28,8 @@ class Pixmap {
 
     unsigned char* data();
     const unsigned char* data() const;
+
+    void writeToFile(std::string path) const;
 };
 
 std::ostream& operator<<(std::ostream& out, Pixmap const& map);

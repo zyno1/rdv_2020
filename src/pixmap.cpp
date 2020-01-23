@@ -1,10 +1,13 @@
 #include "pixmap.h"
 
+#include<fstream>
+
 Pixmap::Pixmap(size_t W, size_t H) : w(W), h(H), map(W * H * 3) {
 
 }
 
 void Pixmap::setPixel(size_t x, size_t y, Vector const& c) {
+    y = h - y - 1;
     size_t i = (y * w + x) * 3;
 
     Vector t = c;
@@ -16,6 +19,7 @@ void Pixmap::setPixel(size_t x, size_t y, Vector const& c) {
 }
 
 Vector Pixmap::getPixel(size_t x, size_t y) const {
+    y = h - y - 1;
     size_t i = (y * w + x) * 3;
     Vector t(map[i], map[i + 1], map[i + 2]);
     return t / 255;
@@ -47,6 +51,14 @@ unsigned char* Pixmap::data() {
 
 const unsigned char* Pixmap::data() const {
     return map.data();
+}
+
+void Pixmap::writeToFile(std::string path) const {
+    std::ofstream res(path, std::ios::binary);
+
+    res << *this;
+
+    res.close();
 }
 
 std::ostream& operator<<(std::ostream& out, Pixmap const& map) {
