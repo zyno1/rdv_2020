@@ -29,6 +29,11 @@ bool pointInTriangle (Vector pt, Vector v1, Vector v2, Vector v3)
 void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
     const Vector color(1.0f, 0.5f, 0.5f);
 
+    std::vector<float> zbuffer;
+    for(size_t i = 0; i < pixmap.getW() * pixmap.getH(); i++) {
+        zbuffer.push_back(-(1 << 30));
+    }
+
     for(size_t i = 0; i < pixmap.size(); i++) {
         pixmap[i] = 50;
     }
@@ -44,13 +49,18 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
         Vector min = v[0];
         Vector max = v[0];
 
+        float z = v[0].z;
+
         for(size_t j = 1; j < v.size(); j++) {
             min.x = std::min(min.x, v[j].x);
             min.y = std::min(min.y, v[j].y);
 
             max.x = std::max(max.x, v[j].x);
             max.y = std::max(max.y, v[j].y);
+
+            z += v[j].z;
         }
+        z /= 3;
 
         min = (min * posCalc) + Vector(posCalc, posCalc, 0);
         max = (max * posCalc) + Vector(posCalc, posCalc, 0);
@@ -62,8 +72,10 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
 
         for(size_t y = miny; y < maxy; y++) {
             for(size_t x = minx; x < maxx; x++) {
-                if(pointInTriangle(Vector((x - posCalc) / posCalc, (y - posCalc) / posCalc, 0), v[0], v[1], v[2])) {
+                size_t j = y * pixmap.getW() + x;
+                if(zbuffer[j] < z && pointInTriangle(Vector((x - posCalc) / posCalc, (y - posCalc) / posCalc, 0), v[0], v[1], v[2])) {
                     pixmap.setPixel(x, y, color);
+                    zbuffer[j] = z;
                 }
             }
         }
