@@ -11,6 +11,12 @@ void Pixmap::setPixel(size_t x, size_t y, Vector const& c) {
     size_t i = (y * w + x) * 3;
 
     Vector t = c;
+
+    float max = std::max(t.x, std::max(t.y, t.z));
+    if(max > 1.f) {
+        t /= max;
+    }
+
     t *= 255;
 
     map[i] = t[0];
