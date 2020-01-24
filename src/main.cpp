@@ -6,6 +6,8 @@
 #include "vector.h"
 #include "matrix.h"
 #include "model.h"
+#include "material.h"
+#include "light.h"
 
 float sign (Vector p1, Vector p2, Vector p3)
 {
@@ -31,8 +33,7 @@ Vector reflect(Vector const& I, Vector const& N) {
     return I - N * 2.f * (I * N);
 }
 
-void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, Vector const& light, float light_intensity, Pixmap & pixmap) {
-    const Vector color(1.0f, 0.5f, 0.5f);
+void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, std::vector<Light> const& lights, Material material, Pixmap & pixmap) {
     const float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
 
     Vector min = v[0];
@@ -65,22 +66,27 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
             Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
             Vector dir = point.normalize();
 
-            Vector light_dir = (light - point).normalize();
-            float diffuse_light_intensity  = light_intensity * std::max(0.f, light_dir*N);
-            float specular_light_intensity = powf(std::max(0.f, -reflect(-light_dir, N)*dir), 50) * light_intensity;
-
             size_t j = y * pixmap.getW() + x;
+            
             if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
-                pixmap.setPixel(x, y, diffuse_light_intensity * color * 0.3 + Vector(1, 1, 1) * specular_light_intensity * 10);
+                float diffuse_light_intensity = 0;
+                float specular_light_intensity = 0;
+
+                for(auto& light : lights) {
+                    Vector light_dir = (light.pos - point).normalize();
+                    diffuse_light_intensity  += light.intensity * std::max(0.f, light_dir*N);
+                    specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.specular_light_exponent) * light.intensity;
+                }
+
+                pixmap.setPixel(x, y, diffuse_light_intensity * material.color * material.diffuse_light_coeff + Vector(1, 1, 1) * specular_light_intensity * material.specular_light_coeff);
                 zbuffer[j] = z;
             }
         }
     }
 }
 
-void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
+void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
     const Vector light(-1.f, 1.f, 1.f);
-    float light_intensity = 3.f;
 
     std::vector<float> zbuffer;
     for(size_t i = 0; i < pixmap.getW() * pixmap.getH(); i++) {
@@ -97,7 +103,7 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
             v.push_back(matrix * model.getVertice(i, j));
         }
 
-        render_triangle(v, zbuffer, light, light_intensity, pixmap);
+        render_triangle(v, zbuffer, lights, material, pixmap);
     }
 }
 
@@ -106,13 +112,20 @@ int main() {
     Model model("data/duck.obj");
     Pixmap pixmap(1024, 1024);
 
+    std::vector<Light> lights;
+    lights.emplace_back(Vector(20, 20, 20), 2.f);
+    lights.emplace_back(Vector(0, 20, 20), 2.f);
+    lights.emplace_back(Vector(-20, 20, 20), 2.f);
+
+    Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
+
     m = Matrix::zoom(0.2f) * m;
-    //m = Matrix::rotateX(-1.f) * m;
+    //m = Matrix::rotateY(-1.f) * m;
     m = Matrix::translate(0, 0, -10.f) * m;
 
     std::cout << model << std::endl;
 
-    render(model, m, pixmap);
+    render(model, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
