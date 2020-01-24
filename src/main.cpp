@@ -34,7 +34,7 @@ Vector reflect(Vector const& I, Vector const& N) {
 void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
     const Vector color(1.0f, 0.5f, 0.5f);
     const Vector light(-1.f, 1.f, 1.f);
-    float light_intensity = 2.f;
+    float light_intensity = 3.f;
 
     std::vector<float> zbuffer;
     for(size_t i = 0; i < pixmap.getW() * pixmap.getH(); i++) {
@@ -81,13 +81,15 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
         for(size_t y = miny; y < maxy; y++) {
             for(size_t x = minx; x < maxx; x++) {
                 Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
+                Vector dir = point.normalize();
 
                 Vector light_dir = (light - point).normalize();
                 float diffuse_light_intensity  = light_intensity * std::max(0.f, light_dir*N);
+                float specular_light_intensity = powf(std::max(0.f, -reflect(-light_dir, N)*dir), 50) * light_intensity;
 
                 size_t j = y * pixmap.getW() + x;
                 if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
-                    pixmap.setPixel(x, y, diffuse_light_intensity * color * 0.3);
+                    pixmap.setPixel(x, y, diffuse_light_intensity * color * 0.3 + Vector(1, 1, 1) * specular_light_intensity * 10);
                     zbuffer[j] = z;
                 }
             }
@@ -101,8 +103,8 @@ int main() {
     Pixmap pixmap(1024, 1024);
 
     m = Matrix::zoom(0.2f) * m;
-    //m = Matrix::rotateY(-1.f) * m;
-    //m = Matrix::translate(0, 0, 0) * m;
+    //m = Matrix::rotateX(-1.f) * m;
+    m = Matrix::translate(0, 0, -10.f) * m;
 
     std::cout << model << std::endl;
 
