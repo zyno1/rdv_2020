@@ -31,8 +31,54 @@ Vector reflect(Vector const& I, Vector const& N) {
     return I - N * 2.f * (I * N);
 }
 
-void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
+void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, Vector const& light, float light_intensity, Pixmap & pixmap) {
     const Vector color(1.0f, 0.5f, 0.5f);
+    const float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
+
+    Vector min = v[0];
+    Vector max = v[0];
+    Vector N = cross(v[1] - v[0], v[2] - v[0]).normalize();
+
+    float z = v[0].z;
+
+    for(size_t j = 1; j < v.size(); j++) {
+        min.x = std::min(min.x, v[j].x);
+        min.y = std::min(min.y, v[j].y);
+
+        max.x = std::max(max.x, v[j].x);
+        max.y = std::max(max.y, v[j].y);
+
+        z += v[j].z;
+    }
+    z /= 3;
+
+    min = (min * posCalc) + Vector(posCalc, posCalc, 0);
+    max = (max * posCalc) + Vector(posCalc, posCalc, 0);
+
+    size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
+    size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
+    size_t maxx = (size_t)std::max(0, std::min((int)pixmap.getW() - 1, (int)max.x + 1));
+    size_t maxy = (size_t)std::max(0, std::min((int)pixmap.getH() - 1, (int)max.y + 1));
+
+    for(size_t y = miny; y < maxy; y++) {
+        for(size_t x = minx; x < maxx; x++) {
+            Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
+            Vector dir = point.normalize();
+
+            Vector light_dir = (light - point).normalize();
+            float diffuse_light_intensity  = light_intensity * std::max(0.f, light_dir*N);
+            float specular_light_intensity = powf(std::max(0.f, -reflect(-light_dir, N)*dir), 50) * light_intensity;
+
+            size_t j = y * pixmap.getW() + x;
+            if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
+                pixmap.setPixel(x, y, diffuse_light_intensity * color * 0.3 + Vector(1, 1, 1) * specular_light_intensity * 10);
+                zbuffer[j] = z;
+            }
+        }
+    }
+}
+
+void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
     const Vector light(-1.f, 1.f, 1.f);
     float light_intensity = 3.f;
 
@@ -45,55 +91,13 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap) {
         pixmap[i] = 50;
     }
 
-    float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
-
     for(size_t i = 0; i < model.getNbFaces(); i++) {
         std::vector<Vector> v;
         for(size_t j = 0; j < 3; j++) {
             v.push_back(matrix * model.getVertice(i, j));
         }
 
-        Vector min = v[0];
-        Vector max = v[0];
-        Vector N = cross(v[1] - v[0], v[2] - v[0]).normalize();
-
-        float z = v[0].z;
-
-        for(size_t j = 1; j < v.size(); j++) {
-            min.x = std::min(min.x, v[j].x);
-            min.y = std::min(min.y, v[j].y);
-
-            max.x = std::max(max.x, v[j].x);
-            max.y = std::max(max.y, v[j].y);
-
-            z += v[j].z;
-        }
-        z /= 3;
-
-        min = (min * posCalc) + Vector(posCalc, posCalc, 0);
-        max = (max * posCalc) + Vector(posCalc, posCalc, 0);
-
-        size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
-        size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
-        size_t maxx = (size_t)std::max(0, std::min((int)pixmap.getW() - 1, (int)max.x + 1));
-        size_t maxy = (size_t)std::max(0, std::min((int)pixmap.getH() - 1, (int)max.y + 1));
-
-        for(size_t y = miny; y < maxy; y++) {
-            for(size_t x = minx; x < maxx; x++) {
-                Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
-                Vector dir = point.normalize();
-
-                Vector light_dir = (light - point).normalize();
-                float diffuse_light_intensity  = light_intensity * std::max(0.f, light_dir*N);
-                float specular_light_intensity = powf(std::max(0.f, -reflect(-light_dir, N)*dir), 50) * light_intensity;
-
-                size_t j = y * pixmap.getW() + x;
-                if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
-                    pixmap.setPixel(x, y, diffuse_light_intensity * color * 0.3 + Vector(1, 1, 1) * specular_light_intensity * 10);
-                    zbuffer[j] = z;
-                }
-            }
-        }
+        render_triangle(v, zbuffer, light, light_intensity, pixmap);
     }
 }
 
