@@ -111,7 +111,6 @@ void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, st
     const float eyeSep = 0.2f;
     const float diff = 5.f * eyeSep / 10.f;
     float angle = atan(diff / 5.f);
-    //angle = M_PI / 6.f;
 
     Matrix t = Matrix::translate(-diff / 2.f, 0, 0);
     Matrix r = Matrix::rotateY(-angle);
