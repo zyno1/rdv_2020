@@ -107,6 +107,45 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
     }
 }
 
+void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
+    const float eyeSep = 0.2f;
+    const float diff = 5 * eyeSep / 10.f;
+
+    Matrix t = Matrix::translate(-diff / 2.f, 0, 0);
+    Matrix r = Matrix::identity(4, 4);
+
+    Matrix m = t * r * matrix;
+
+    Pixmap right(pixmap.getW(), pixmap.getH());
+
+    render(model, m, right, lights, material);
+
+    t = Matrix::translate(diff / 2.f, 0, 0);
+    r = Matrix::identity(4, 4);
+
+    m = t * r * matrix;
+
+    Pixmap left(pixmap.getW(), pixmap.getH());
+
+    render(model, m, left, lights, material);
+
+    for(size_t j = 0; j < pixmap.getH(); j++) {
+        for(size_t i = 0; i < pixmap.getW(); i++) {
+            Vector cl = left.getPixel(i, j);
+            Vector cr = right.getPixel(i, j);
+
+            cr[2] = cr[0];
+            cr[0] = 0;
+            cr[1] = 0;
+
+            cl[1] = 0;
+            cl[2] = 0;
+
+            pixmap.setPixel(i, j, cl + cr);
+        }
+    }
+}
+
 int main() {
     Matrix m = Matrix::identity(4, 4);
     Model model("data/duck.obj");
@@ -125,7 +164,8 @@ int main() {
 
     std::cout << model << std::endl;
 
-    render(model, m, pixmap, lights, material);
+    //render(model, m, pixmap, lights, material);
+    renderAnaglyph(model, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
