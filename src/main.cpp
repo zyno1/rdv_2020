@@ -109,21 +109,23 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
 
 void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
     const float eyeSep = 0.2f;
-    const float diff = 5 * eyeSep / 10.f;
+    const float diff = 5.f * eyeSep / 10.f;
+    float angle = atan(diff / 5.f);
+    //angle = M_PI / 6.f;
 
     Matrix t = Matrix::translate(-diff / 2.f, 0, 0);
-    Matrix r = Matrix::identity(4, 4);
+    Matrix r = Matrix::rotateY(-angle);
 
-    Matrix m = t * r * matrix;
+    Matrix m = t * matrix * r;
 
     Pixmap right(pixmap.getW(), pixmap.getH());
 
     render(model, m, right, lights, material);
 
     t = Matrix::translate(diff / 2.f, 0, 0);
-    r = Matrix::identity(4, 4);
+    r = Matrix::rotateY(angle);
 
-    m = t * r * matrix;
+    m = t * matrix * r;
 
     Pixmap left(pixmap.getW(), pixmap.getH());
 
@@ -160,7 +162,7 @@ int main() {
 
     m = Matrix::zoom(0.2f) * m;
     //m = Matrix::rotateY(-1.f) * m;
-    m = Matrix::translate(0, 0, -10.f) * m;
+    m = Matrix::translate(0, 0, -5.f) * m;
 
     std::cout << model << std::endl;
 
