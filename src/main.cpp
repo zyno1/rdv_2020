@@ -100,7 +100,10 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
     for(size_t i = 0; i < model.getNbFaces(); i++) {
         std::vector<Vector> v;
         for(size_t j = 0; j < 3; j++) {
-            v.push_back(matrix * model.getVertice(i, j));
+            Vector tmp = model.getVertice(i, j);
+            tmp.w = 1;
+            tmp = matrix * tmp;
+            v.push_back(tmp / tmp.w);
         }
 
         render_triangle(v, zbuffer, lights, material, pixmap);
@@ -152,21 +155,37 @@ int main() {
     Model model("data/duck.obj");
     Pixmap pixmap(1024, 1024);
 
+    const float fov = M_PI / 3.0;
+    const float rfov = 1 / tan(fov);
+    const float zfar = 100;
+    const float znear = 0.1;
+    const float ar = (float)pixmap.getH() / pixmap.getW();
+
+    Matrix p = Matrix::identity(4, 4);
+    p.set(0, 0, ar * rfov);
+    p.set(1, 1, rfov);
+    p.set(2, 2, zfar / (zfar - znear));
+    p.set(2, 3, 1);
+    p.set(3, 2, - zfar * znear / (zfar - znear));
+    p.set(3, 3, 0);
+
     std::vector<Light> lights;
-    lights.emplace_back(Vector(20, 20, 20), 2.f);
-    lights.emplace_back(Vector(0, 20, 20), 2.f);
-    lights.emplace_back(Vector(-20, 20, 20), 2.f);
+    lights.emplace_back(Vector(5, 5, 1), 2.f);
+    //lights.emplace_back(Vector(0, 5, 1), 2.f);
+    lights.emplace_back(Vector(-5, 5, 1), 2.f);
 
     Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
 
     m = Matrix::zoom(0.2f) * m;
-    //m = Matrix::rotateY(-1.f) * m;
+    //m = Matrix::rotateY(-0.5f) * m;
     m = Matrix::translate(0, 0, -5.f) * m;
+
+    m = p * m;
 
     std::cout << model << std::endl;
 
-    //render(model, m, pixmap, lights, material);
-    renderAnaglyph(model, m, pixmap, lights, material);
+    render(model, m, pixmap, lights, material);
+    //renderAnaglyph(model, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
