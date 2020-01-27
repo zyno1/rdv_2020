@@ -2,6 +2,7 @@
 #include<algorithm>
 #include<cmath>
 #include<cstring>
+#include<string>
 
 #include "pixmap.h"
 #include "vector.h"
@@ -168,26 +169,30 @@ int main(int argc, char** argv) {
     Model model("data/duck.obj");
     Pixmap pixmap(1920, 1080);
 
+    float zoom = 0.8f;
+    float tx = 0;
+    float ty = 0;
+    float tz = -5.f;
+
     for(int i = 1; i < argc; i++) {
         if(0 == std::strcmp("--help", argv[i]) || 0 == std::strcmp("-h", argv[i])) {
             std::cout << "help screen" << std::endl;
             exit(0);
         }
         else if(0 == std::strcmp("-i", argv[i])) {
-            //load model from path argv[i+1]
             model = Model(argv[++i]);
         }
         else if(0 == std::strcmp("--zoom", argv[i])) {
-            //zoom factor argv[i+1]
+            zoom = std::stof(argv[++i]);
         }
         else if(0 == std::strcmp("-x", argv[i])) {
-            //x  argv[i+1]
+            tx = std::stof(argv[++i]);
         }
         else if(0 == std::strcmp("-y", argv[i])) {
-            //y  argv[i+1]
+            ty = std::stof(argv[++i]);
         }
         else if(0 == std::strcmp("-z", argv[i])) {
-            //z  argv[i+1]
+            tz = std::stof(argv[++i]);
         }
     }
 
@@ -211,9 +216,9 @@ int main(int argc, char** argv) {
 
     Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
 
-    m = Matrix::zoom(0.2f) * m;
+    m = Matrix::zoom(zoom) * m;
     //m = Matrix::rotateY(-0.5f) * m;
-    m = Matrix::translate(0, 0, -5.f) * m;
+    m = Matrix::translate(tx, ty, tz) * m;
 
     std::cout << model << std::endl;
 
