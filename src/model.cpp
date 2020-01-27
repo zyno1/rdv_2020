@@ -42,6 +42,8 @@ Model::Model(std::string const& file) {
     in.close();
 }
 
+Model::Model() {}
+
 size_t Model::getNbVertices() const {
     return vertices.size();
 }
@@ -64,6 +66,19 @@ Vector& Model::getVertice(size_t fi, size_t j) {
 
 const Vector& Model::getVertice(size_t fi, size_t j) const {
     return vertices[faces[fi][j]];
+}
+
+Model& Model::operator=(Model const& b) {
+    vertices.clear();
+    faces.clear();
+
+    vertices = b.vertices;
+
+    for(size_t i = 0; i < b.faces.size(); i++) {
+        faces.push_back(b.faces[i]);
+    }
+
+    return *this;
 }
 
 std::ostream& operator<<(std::ostream& out, Model const& m) {

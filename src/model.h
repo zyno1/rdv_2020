@@ -13,6 +13,7 @@ class Model {
 
     public:
     Model(std::string const& file);
+    Model();
 
     size_t getNbVertices() const;
     size_t getNbFaces() const;
@@ -22,6 +23,8 @@ class Model {
 
     Vector& getVertice(size_t fi, size_t j);
     const Vector& getVertice(size_t fi, size_t j) const;
+
+    Model& operator=(Model const& b);
 };
 
 std::ostream& operator<<(std::ostream& out, Model const& m);

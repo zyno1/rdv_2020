@@ -1,6 +1,7 @@
 #include<iostream>
 #include<algorithm>
 #include<cmath>
+#include<cstring>
 
 #include "pixmap.h"
 #include "vector.h"
@@ -162,10 +163,33 @@ void renderAnaglyph(Model const& model, Matrix const& projection, Matrix const& 
     }
 }
 
-int main() {
+int main(int argc, char** argv) {
     Matrix m = Matrix::identity(4, 4);
     Model model("data/duck.obj");
     Pixmap pixmap(1920, 1080);
+
+    for(int i = 1; i < argc; i++) {
+        if(0 == std::strcmp("--help", argv[i]) || 0 == std::strcmp("-h", argv[i])) {
+            std::cout << "help screen" << std::endl;
+            exit(0);
+        }
+        else if(0 == std::strcmp("-i", argv[i])) {
+            //load model from path argv[i+1]
+            model = Model(argv[++i]);
+        }
+        else if(0 == std::strcmp("--zoom", argv[i])) {
+            //zoom factor argv[i+1]
+        }
+        else if(0 == std::strcmp("-x", argv[i])) {
+            //x  argv[i+1]
+        }
+        else if(0 == std::strcmp("-y", argv[i])) {
+            //y  argv[i+1]
+        }
+        else if(0 == std::strcmp("-z", argv[i])) {
+            //z  argv[i+1]
+        }
+    }
 
     const float fov = M_PI / 3.0;
     const float zfar = 100;
