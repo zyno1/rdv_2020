@@ -36,6 +36,9 @@ Vector reflect(Vector const& I, Vector const& N) {
 void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, std::vector<Light> const& lights, Material material, Pixmap & pixmap) {
     const float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
 
+    const float posCalcX = pixmap.getW() / 2;
+    const float posCalcY = pixmap.getH() / 2;
+
     Vector min = v[0];
     Vector max = v[0];
     Vector N = cross(v[1] - v[0], v[2] - v[0]).normalize();
@@ -53,8 +56,16 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
     }
     z /= 3;
 
-    min = (min * posCalc) + Vector(posCalc, posCalc, 0);
-    max = (max * posCalc) + Vector(posCalc, posCalc, 0);
+    min.x *= posCalcX;
+    min.y *= posCalcY;
+
+    max.x = posCalcX;
+    max.y *= posCalcY;
+
+    min += Vector(posCalcX, posCalcY, 0);
+    max += Vector(posCalcX, posCalcY, 0);
+    //min = (min * posCalc) + Vector(posCalc, posCalc, 0);
+    //max = (max * posCalc) + Vector(posCalc, posCalc, 0);
 
     size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
     size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
@@ -63,7 +74,7 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
 
     for(size_t y = miny; y < maxy; y++) {
         for(size_t x = minx; x < maxx; x++) {
-            Vector point((x - posCalc) / posCalc, (y - posCalc) / posCalc, z);
+            Vector point((x - posCalcX) / posCalcX, (y - posCalcY) / posCalcY, z);
             Vector dir = point.normalize();
 
             size_t j = y * pixmap.getW() + x;
@@ -110,7 +121,7 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
     }
 }
 
-void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
+void renderAnaglyph(Model const& model, Matrix const& projection, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
     const float eyeSep = 0.2f;
     const float diff = 5.f * eyeSep / 10.f;
     float angle = atan(diff / 5.f);
@@ -122,7 +133,7 @@ void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, st
 
     Pixmap right(pixmap.getW(), pixmap.getH());
 
-    render(model, m, right, lights, material);
+    render(model, projection * m, right, lights, material);
 
     t = Matrix::translate(diff / 2.f, 0, 0);
     r = Matrix::rotateY(angle);
@@ -131,7 +142,7 @@ void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, st
 
     Pixmap left(pixmap.getW(), pixmap.getH());
 
-    render(model, m, left, lights, material);
+    render(model, projection * m, left, lights, material);
 
     for(size_t j = 0; j < pixmap.getH(); j++) {
         for(size_t i = 0; i < pixmap.getW(); i++) {
@@ -153,7 +164,7 @@ void renderAnaglyph(Model const& model, Matrix const& matrix, Pixmap& pixmap, st
 int main() {
     Matrix m = Matrix::identity(4, 4);
     Model model("data/duck.obj");
-    Pixmap pixmap(1024, 1024);
+    Pixmap pixmap(1920, 1080);
 
     const float fov = M_PI / 3.0;
     const float rfov = 1 / tan(fov);
@@ -186,12 +197,10 @@ int main() {
     //m = Matrix::rotateY(-0.5f) * m;
     m = Matrix::translate(0, 0, -5.f) * m;
 
-    m = p * m;
-
     std::cout << model << std::endl;
 
-    //render(model, m, pixmap, lights, material);
-    renderAnaglyph(model, m, pixmap, lights, material);
+    //render(model, p * m, pixmap, lights, material);
+    renderAnaglyph(model, p, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
