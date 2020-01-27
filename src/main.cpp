@@ -31,15 +31,11 @@ Vector reflect(Vector const& I, Vector const& N) {
     return I - N * 2.f * (I * N);
 }
 
-void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, std::vector<Light> const& lights, Material material, Pixmap & pixmap) {
-    const float posCalcX = pixmap.getW() / 2;
-    const float posCalcY = pixmap.getH() / 2;
+void calcMaxMinVector(std::vector<Vector> const& v, float posCalcX, float posCalcY, Vector & min, Vector & max, float & z) {
+    min = v[0];
+    max = v[0];
 
-    Vector min = v[0];
-    Vector max = v[0];
-    Vector N = cross(v[1] - v[0], v[2] - v[0]).normalize();
-
-    float z = v[0].z;
+    z = v[0].z;
 
     for(size_t j = 1; j < v.size(); j++) {
         min.x = std::min(min.x, v[j].x);
@@ -60,6 +56,19 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
 
     min += Vector(posCalcX, posCalcY, 0);
     max += Vector(posCalcX, posCalcY, 0);
+}
+
+void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, std::vector<Light> const& lights, Material material, Pixmap & pixmap) {
+    const float posCalcX = pixmap.getW() / 2;
+    const float posCalcY = pixmap.getH() / 2;
+
+    Vector min;
+    Vector max;
+    float z;
+
+    calcMaxMinVector(v, posCalcX, posCalcY, min, max, z);
+
+    Vector N = cross(v[1] - v[0], v[2] - v[0]).normalize();
 
     size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
     size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
@@ -184,8 +193,8 @@ int main() {
 
     std::cout << model << std::endl;
 
-    //render(model, p * m, pixmap, lights, material);
-    renderAnaglyph(model, p, m, pixmap, lights, material);
+    render(model, p * m, pixmap, lights, material);
+    //renderAnaglyph(model, p, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
