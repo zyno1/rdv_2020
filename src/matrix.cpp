@@ -108,6 +108,21 @@ Matrix Matrix::rotateZ(float a) {
     return res;
 }
 
+Matrix Matrix::projection(float ar, float fov, float zfar, float znear) {
+    const float rfov = 1 / tan(fov);
+
+    Matrix p = Matrix::identity(4, 4);
+    
+    p.set(0, 0, ar * rfov);
+    p.set(1, 1, rfov);
+    p.set(2, 2, zfar / (zfar - znear));
+    p.set(2, 3, 1);
+    p.set(3, 2, - zfar * znear / (zfar - znear));
+    p.set(3, 3, 0);
+
+    return p;
+}
+
 Matrix& Matrix::operator=(Matrix const& b) {
     w = b.w;
     h = b.h;

@@ -35,6 +35,7 @@ class Matrix {
     static Matrix rotateX(float a);
     static Matrix rotateY(float a);
     static Matrix rotateZ(float a);
+    static Matrix projection(float ar, float fov, float zfar, float znear);
 };
 
 Matrix operator*(Matrix const& a, Matrix const& b);

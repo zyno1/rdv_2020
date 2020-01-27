@@ -9,13 +9,11 @@
 #include "material.h"
 #include "light.h"
 
-float sign (Vector p1, Vector p2, Vector p3)
-{
+float sign (Vector p1, Vector p2, Vector p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
-bool pointInTriangle (Vector pt, Vector v1, Vector v2, Vector v3)
-{
+bool pointInTriangle (Vector pt, Vector v1, Vector v2, Vector v3) {
     float d1, d2, d3;
     bool has_neg, has_pos;
 
@@ -34,8 +32,6 @@ Vector reflect(Vector const& I, Vector const& N) {
 }
 
 void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer, std::vector<Light> const& lights, Material material, Pixmap & pixmap) {
-    const float posCalc = std::min(pixmap.getW(), pixmap.getH()) / 2;
-
     const float posCalcX = pixmap.getW() / 2;
     const float posCalcY = pixmap.getH() / 2;
 
@@ -64,8 +60,6 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
 
     min += Vector(posCalcX, posCalcY, 0);
     max += Vector(posCalcX, posCalcY, 0);
-    //min = (min * posCalc) + Vector(posCalc, posCalc, 0);
-    //max = (max * posCalc) + Vector(posCalc, posCalc, 0);
 
     size_t minx = (size_t)std::max(0, std::min((int)pixmap.getW(), (int)min.x));
     size_t miny = (size_t)std::max(0, std::min((int)pixmap.getH(), (int)min.y));
@@ -97,8 +91,6 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
 }
 
 void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
-    const Vector light(-1.f, 1.f, 1.f);
-
     std::vector<float> zbuffer;
     for(size_t i = 0; i < pixmap.getW() * pixmap.getH(); i++) {
         zbuffer.push_back(-(1 << 30));
@@ -167,18 +159,11 @@ int main() {
     Pixmap pixmap(1920, 1080);
 
     const float fov = M_PI / 3.0;
-    const float rfov = 1 / tan(fov);
     const float zfar = 100;
     const float znear = 0.1;
     const float ar = (float)pixmap.getH() / pixmap.getW();
 
-    Matrix p = Matrix::identity(4, 4);
-    p.set(0, 0, ar * rfov);
-    p.set(1, 1, rfov);
-    p.set(2, 2, zfar / (zfar - znear));
-    p.set(2, 3, 1);
-    p.set(3, 2, - zfar * znear / (zfar - znear));
-    p.set(3, 3, 0);
+    Matrix p = Matrix::projection(ar, fov, zfar, znear);
 
     std::vector<Light> lights;
     lights.emplace_back(Vector(10, 10, 1), 2.f);
