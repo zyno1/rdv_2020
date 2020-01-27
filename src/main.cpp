@@ -170,9 +170,15 @@ int main() {
     p.set(3, 3, 0);
 
     std::vector<Light> lights;
-    lights.emplace_back(Vector(5, 5, 1), 2.f);
-    //lights.emplace_back(Vector(0, 5, 1), 2.f);
-    lights.emplace_back(Vector(-5, 5, 1), 2.f);
+    lights.emplace_back(Vector(10, 10, 1), 2.f);
+    lights.emplace_back(Vector(0, 10, 1), 2.f);
+    lights.emplace_back(Vector(-10, 10, 1), 2.f);
+
+    for(size_t i = 0; i < lights.size(); i++) {
+        lights[i].pos.w = 1;
+        lights[i].pos = p * lights[i].pos;
+        lights[i].pos = lights[i].pos / -lights[i].pos.w;
+    }
 
     Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
 
@@ -184,8 +190,8 @@ int main() {
 
     std::cout << model << std::endl;
 
-    render(model, m, pixmap, lights, material);
-    //renderAnaglyph(model, m, pixmap, lights, material);
+    //render(model, m, pixmap, lights, material);
+    renderAnaglyph(model, m, pixmap, lights, material);
 
     pixmap.writeToFile("res.ppm");
 
