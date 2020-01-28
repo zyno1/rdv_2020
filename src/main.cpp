@@ -124,10 +124,12 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
     }
 }
 
-void renderAnaglyph(Model const& model, Matrix const& projection, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
-    const float eyeSep = 0.2f;
-    const float diff = 5.f * eyeSep / 10.f;
-    float angle = atan(diff / 5.f);
+void renderAnaglyph(float z, float znear, Model const& model, Matrix const& projection, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
+    z = abs(abs(z) - 0);
+    const float eyeSep = 0.1f; //a ajuster
+    //const float diff = z * eyeSep / 10.f;
+    const float diff = eyeSep * (z - znear) / z;
+    float angle = atan(diff / z);
 
     Matrix t = Matrix::translate(-diff / 2.f, 0, 0);
     Matrix r = Matrix::rotateY(-angle);
@@ -152,14 +154,13 @@ void renderAnaglyph(Model const& model, Matrix const& projection, Matrix const& 
             Vector cl = left.getPixel(i, j);
             Vector cr = right.getPixel(i, j);
 
-            cr[2] = cr[0];
-            cr[0] = 0;
-            cr[1] = 0;
+            //float gl = cl[0] * 0.21 + cl[1] * 0.72 + cl[2] * 0.07;
+            //float gr = cr[0] * 0.21 + cr[1] * 0.72 + cr[2] * 0.07;
 
-            cl[1] = 0;
-            cl[2] = 0;
+            float gl = (cl[0] + cl[1] + cl[2]) / 3;
+            float gr = (cr[0] + cr[1] + cr[2]) / 3;
 
-            pixmap.setPixel(i, j, cl + cr);
+            pixmap.setPixel(i, j, Vector(gl, 0, gr));
         }
     }
 }
@@ -223,7 +224,7 @@ int main(int argc, char** argv) {
 
     Matrix m = Matrix::translate(tx, ty, tz) * Matrix::zoom(zoom) * r;
     Model model(modelPath);
-    Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
+    Material material(Vector(0.4f, 0, 0), 0.6f, 0.3f, 500.f);
     Pixmap pixmap(1920, 1080);
 
     std::cout << model << std::endl;
@@ -247,7 +248,7 @@ int main(int argc, char** argv) {
     }
 
     if(anaglyph) {
-        renderAnaglyph(model, projection, m, pixmap, lights, material);
+        renderAnaglyph(tz, znear, model, projection, m, pixmap, lights, material);
     }
     else {
         render(model, projection * m, pixmap, lights, material);
