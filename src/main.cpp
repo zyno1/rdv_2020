@@ -154,11 +154,11 @@ void renderAnaglyph(float z, float znear, Model const& model, Matrix const& proj
             Vector cl = left.getPixel(i, j);
             Vector cr = right.getPixel(i, j);
 
-            //float gl = cl[0] * 0.21 + cl[1] * 0.72 + cl[2] * 0.07;
-            //float gr = cr[0] * 0.21 + cr[1] * 0.72 + cr[2] * 0.07;
+            float gl = cl[0] * 0.21 + cl[1] * 0.72 + cl[2] * 0.07;
+            float gr = cr[0] * 0.21 + cr[1] * 0.72 + cr[2] * 0.07;
 
-            float gl = (cl[0] + cl[1] + cl[2]) / 3;
-            float gr = (cr[0] + cr[1] + cr[2]) / 3;
+            //float gl = (cl[0] + cl[1] + cl[2]) / 3;
+            //float gr = (cr[0] + cr[1] + cr[2]) / 3;
 
             pixmap.setPixel(i, j, Vector(gl, 0, gr));
         }
@@ -176,6 +176,10 @@ int main(int argc, char** argv) {
     bool anaglyph = true;
 
     Matrix r = Matrix::identity(4, 4);
+
+    const float brightness = 0.5f;
+
+    Vector color(brightness, brightness, brightness);
 
     for(int i = 1; i < argc; i++) {
         if(0 == std::strcmp("--help", argv[i]) || 0 == std::strcmp("-h", argv[i])) {
@@ -211,9 +215,11 @@ int main(int argc, char** argv) {
         }
         else if(0 == std::strcmp("--anaglyph", argv[i])) {
             anaglyph = true;
+            color = Vector(brightness, brightness, brightness);
         }
         else if(0 == std::strcmp("--normal", argv[i])) {
             anaglyph = false;
+            color = Vector(brightness, 0, 0);
         }
     }
 
@@ -224,7 +230,7 @@ int main(int argc, char** argv) {
 
     Matrix m = Matrix::translate(tx, ty, tz) * Matrix::zoom(zoom) * r;
     Model model(modelPath);
-    Material material(Vector(0.4f, 0, 0), 0.6f, 0.3f, 500.f);
+    Material material(color, 0.3f, 0.3f, 500.f);
     Pixmap pixmap(1920, 1080);
 
     std::cout << model << std::endl;
