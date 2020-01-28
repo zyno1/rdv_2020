@@ -188,7 +188,7 @@ void processArgv(int argc, char** argv, std::string & modelPath, Matrix & m, boo
             std::cout << "--rx [float]    specifies the rotation in radians around the x axis" << std::endl;
             std::cout << "--ry [float]    specifies the rotation in radians around the y axis" << std::endl;
             std::cout << "--rz [float]    specifies the rotation in radians around the z axis" << std::endl;
-            std::cout << "                Note: rotations are all done before translations" << std::endl;
+            std::cout << "                Note: rotations are done before translations" << std::endl;
             std::cout << "--anaglyph      Use this option to render an anaglyph (default)" << std::endl;
             std::cout << "--normal        Use this for a normal render" << std::endl;
             exit(0);
