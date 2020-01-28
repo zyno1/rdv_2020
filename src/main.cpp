@@ -165,14 +165,16 @@ void renderAnaglyph(Model const& model, Matrix const& projection, Matrix const& 
 }
 
 int main(int argc, char** argv) {
-    Matrix m = Matrix::identity(4, 4);
-    Model model("data/duck.obj");
-    Pixmap pixmap(1920, 1080);
+    std::string modelPath = "";
 
     float zoom = 0.8f;
     float tx = 0;
     float ty = 0;
     float tz = -5.f;
+
+    bool anaglyph = true;
+
+    Matrix r = Matrix::identity(4, 4);
 
     for(int i = 1; i < argc; i++) {
         if(0 == std::strcmp("--help", argv[i]) || 0 == std::strcmp("-h", argv[i])) {
@@ -180,7 +182,7 @@ int main(int argc, char** argv) {
             exit(0);
         }
         else if(0 == std::strcmp("-i", argv[i])) {
-            model = Model(argv[++i]);
+            modelPath = argv[++i];
         }
         else if(0 == std::strcmp("--zoom", argv[i])) {
             zoom = std::stof(argv[++i]);
@@ -194,14 +196,44 @@ int main(int argc, char** argv) {
         else if(0 == std::strcmp("-z", argv[i])) {
             tz = std::stof(argv[++i]);
         }
+        else if(0 == std::strcmp("-rx", argv[i])) {
+            float rx = std::stof(argv[++i]);
+            r = Matrix::rotateX(rx) * r;
+        }
+        else if(0 == std::strcmp("-ry", argv[i])) {
+            float ry = std::stof(argv[++i]);
+            r = Matrix::rotateY(ry) * r;
+        }
+        else if(0 == std::strcmp("-rz", argv[i])) {
+            float rz = std::stof(argv[++i]);
+            r = Matrix::rotateZ(rz) * r;
+        }
+        else if(0 == std::strcmp("--anaglyph", argv[i])) {
+            anaglyph = true;
+        }
+        else if(0 == std::strcmp("--normal", argv[i])) {
+            anaglyph = false;
+        }
     }
+
+    if(modelPath == "") {
+        std::cerr << "Error: no model specified\nexiting" << std::endl;
+        exit(1);
+    }
+
+    Matrix m = Matrix::translate(tx, ty, tz) * Matrix::zoom(zoom) * r;
+    Model model(modelPath);
+    Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
+    Pixmap pixmap(1920, 1080);
+
+    std::cout << model << std::endl;
 
     const float fov = M_PI / 3.0;
     const float zfar = 100;
     const float znear = 0.1;
     const float ar = (float)pixmap.getH() / pixmap.getW();
 
-    Matrix p = Matrix::projection(ar, fov, zfar, znear);
+    Matrix projection = Matrix::projection(ar, fov, zfar, znear);
 
     std::vector<Light> lights;
     lights.emplace_back(Vector(10, 10, 1), 2.f);
@@ -210,20 +242,16 @@ int main(int argc, char** argv) {
 
     for(size_t i = 0; i < lights.size(); i++) {
         lights[i].pos.w = 1;
-        lights[i].pos = p * lights[i].pos;
+        lights[i].pos = projection * lights[i].pos;
         lights[i].pos = lights[i].pos / -lights[i].pos.w;
     }
 
-    Material material(Vector(0.4f, 0, 0), 0.3f, 0.3f, 500.f);
-
-    m = Matrix::zoom(zoom) * m;
-    //m = Matrix::rotateY(-0.5f) * m;
-    m = Matrix::translate(tx, ty, tz) * m;
-
-    std::cout << model << std::endl;
-
-    render(model, p * m, pixmap, lights, material);
-    //renderAnaglyph(model, p, m, pixmap, lights, material);
+    if(anaglyph) {
+        renderAnaglyph(model, projection, m, pixmap, lights, material);
+    }
+    else {
+        render(model, projection * m, pixmap, lights, material);
+    }
 
     pixmap.writeToFile("res.ppm");
 
