@@ -165,25 +165,32 @@ void renderAnaglyph(float z, float znear, Model const& model, Matrix const& proj
     }
 }
 
-int main(int argc, char** argv) {
-    std::string modelPath = "";
-
+void processArgv(int argc, char** argv, std::string & modelPath, Matrix & m, bool & anaglyph, float& tz, Vector& color) {
     float zoom = 0.8f;
     float tx = 0;
     float ty = 0;
-    float tz = -5.f;
+    tz = -5.f;
 
-    bool anaglyph = true;
+    anaglyph = true;
+    const float brightness = 0.5f;
+    color = Vector(brightness, brightness, brightness);
 
     Matrix r = Matrix::identity(4, 4);
-
-    const float brightness = 0.5f;
-
-    Vector color(brightness, brightness, brightness);
 
     for(int i = 1; i < argc; i++) {
         if(0 == std::strcmp("--help", argv[i]) || 0 == std::strcmp("-h", argv[i])) {
             std::cout << "help screen" << std::endl;
+            std::cout << "-i [str]        specifies the path to the model" << std::endl;
+            std::cout << "--zoom [float]  specifies a zoom factor" << std::endl;
+            std::cout << "-x [float]      specifies the position for the x coordinate" << std::endl;
+            std::cout << "-y [float]      specifies the position for the y coordinate" << std::endl;
+            std::cout << "-z [float]      specifies the position for the z coordinate" << std::endl;
+            std::cout << "--rx [float]    specifies the rotation in radians around the x axis" << std::endl;
+            std::cout << "--ry [float]    specifies the rotation in radians around the y axis" << std::endl;
+            std::cout << "--rz [float]    specifies the rotation in radians around the z axis" << std::endl;
+            std::cout << "                Note: rotations are all done before translations" << std::endl;
+            std::cout << "--anaglyph      Use this option to render an anaglyph (default)" << std::endl;
+            std::cout << "--normal        Use this for a normal render" << std::endl;
             exit(0);
         }
         else if(0 == std::strcmp("-i", argv[i])) {
@@ -201,15 +208,15 @@ int main(int argc, char** argv) {
         else if(0 == std::strcmp("-z", argv[i])) {
             tz = std::stof(argv[++i]);
         }
-        else if(0 == std::strcmp("-rx", argv[i])) {
+        else if(0 == std::strcmp("--rx", argv[i])) {
             float rx = std::stof(argv[++i]);
             r = Matrix::rotateX(rx) * r;
         }
-        else if(0 == std::strcmp("-ry", argv[i])) {
+        else if(0 == std::strcmp("--ry", argv[i])) {
             float ry = std::stof(argv[++i]);
             r = Matrix::rotateY(ry) * r;
         }
-        else if(0 == std::strcmp("-rz", argv[i])) {
+        else if(0 == std::strcmp("--rz", argv[i])) {
             float rz = std::stof(argv[++i]);
             r = Matrix::rotateZ(rz) * r;
         }
@@ -223,12 +230,23 @@ int main(int argc, char** argv) {
         }
     }
 
+    m = Matrix::translate(tx, ty, tz) * Matrix::zoom(zoom) * r;
+}
+
+int main(int argc, char** argv) {
+    std::string modelPath = "";
+    float tz = -5.f;
+    bool anaglyph = true;
+    Vector color(0, 0, 0);
+    Matrix m = Matrix::identity(4, 4);
+
+    processArgv(argc, argv, modelPath, m, anaglyph, tz, color);
+
     if(modelPath == "") {
         std::cerr << "Error: no model specified\nexiting" << std::endl;
         exit(1);
     }
 
-    Matrix m = Matrix::translate(tx, ty, tz) * Matrix::zoom(zoom) * r;
     Model model(modelPath);
     Material material(color, 0.3f, 0.3f, 500.f);
     Pixmap pixmap(1920, 1080);
