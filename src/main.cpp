@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
 
     const float fov = M_PI / 3.0;
     const float zfar = 100;
-    const float znear = 0.1;
+    const float znear = 0.25;
     const float ar = (float)pixmap.getH() / pixmap.getW();
 
     Matrix projection = Matrix::projection(ar, fov, zfar, znear);
