@@ -64,8 +64,7 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
     const float posCalcX = pixmap.getW() / 2;
     const float posCalcY = pixmap.getH() / 2;
 
-    Vector min;
-    Vector max;
+    Vector min, max;
     float z;
 
     calcMaxMinVector(v, posCalcX, posCalcY, min, max, z);
@@ -85,8 +84,7 @@ void render_triangle(std::vector<Vector> const& v, std::vector<float> & zbuffer,
             size_t j = y * pixmap.getW() + x;
             
             if(zbuffer[j] < z && pointInTriangle(point, v[0], v[1], v[2])) {
-                float diffuse_light_intensity = 0;
-                float specular_light_intensity = 0;
+                float diffuse_light_intensity = 0, specular_light_intensity = 0;
 
                 for(auto& light : lights) {
                     Vector light_dir = (light.pos - point).normalize();
@@ -124,6 +122,16 @@ void render(Model const& model, Matrix const& matrix, Pixmap& pixmap, std::vecto
     }
 }
 
+Matrix translateRotate(float diff, float angle, Matrix const& matrix) {
+
+    Matrix t = Matrix::translate(diff / 2.f, 0, 0);
+    Matrix r = Matrix::rotateY(angle);
+
+    Matrix m = t * matrix * r;
+
+    return m;
+}
+
 void renderAnaglyph(float z, float znear, Model const& model, Matrix const& projection, Matrix const& matrix, Pixmap& pixmap, std::vector<Light> const& lights, Material const& material) {
     z = abs(abs(z) - 0);
     const float eyeSep = 0.1f; //a ajuster
@@ -131,22 +139,12 @@ void renderAnaglyph(float z, float znear, Model const& model, Matrix const& proj
     const float diff = eyeSep * (z - znear) / z;
     float angle = atan(diff / z);
 
-    Matrix t = Matrix::translate(-diff / 2.f, 0, 0);
-    Matrix r = Matrix::rotateY(-angle);
-
-    Matrix m = t * matrix * r;
-
+    Matrix m = translateRotate(-diff,-angle,matrix);
     Pixmap right(pixmap.getW(), pixmap.getH());
-
     render(model, projection * m, right, lights, material);
 
-    t = Matrix::translate(diff / 2.f, 0, 0);
-    r = Matrix::rotateY(angle);
-
-    m = t * matrix * r;
-
+    m = translateRotate(diff,angle,matrix);
     Pixmap left(pixmap.getW(), pixmap.getH());
-
     render(model, projection * m, left, lights, material);
 
     for(size_t j = 0; j < pixmap.getH(); j++) {
@@ -166,6 +164,7 @@ void renderAnaglyph(float z, float znear, Model const& model, Matrix const& proj
 }
 
 void processArgv(int argc, char** argv, std::string & modelPath, Matrix & m, bool & anaglyph, float& tz, Vector& color) {
+    //default values
     float zoom = 0.8f;
     float tx = 0;
     float ty = 0;
@@ -255,7 +254,7 @@ int main(int argc, char** argv) {
 
     const float fov = M_PI / 3.0;
     const float zfar = 100;
-    const float znear = 0.25;
+    const float znear = 0.35;
     const float ar = (float)pixmap.getH() / pixmap.getW();
 
     Matrix projection = Matrix::projection(ar, fov, zfar, znear);

@@ -31,7 +31,7 @@ Model::Model(std::string const& file) {
             int idx, cnt=0;
             iss >> trash;
             while (iss >> idx) {
-                idx--; // in wavefront obj all indices start at 1, not zero
+                idx--; // in wavefront obj all indices starts at 1, not zero
                 f.push_back(idx);
                 cnt++;
             }
