@@ -17,21 +17,21 @@ make
 
 * sans anaglyphe : 
 
-`-i data/duck.obj --zoom 0.5 --normal`
+`./rdv_2020 -i data/duck.obj --zoom 0.5 --normal`
 
 ![Duck](images/res1ducknormal.png)
 
-`-i data/blender_monkey.obj --zoom 1.5 --normal`
+`./rdv_2020 -i data/blender_monkey.obj --zoom 1.5 --normal`
 
 ![Monkey](images/res1monkeynormal.png)
 
 * avec anaglyphe : 
 
-`-i data/duck.obj --zoom 0.5`
+`./rdv_2020 -i data/duck.obj --zoom 0.5`
 
 ![Duck](images/res1duckanagly.png)
 
-`-i data/blender_monkey.obj --zoom 1.5`
+`./rdv_2020 -i data/blender_monkey.obj --zoom 1.5`
 
 ![Monkey](images/res1monkeyanagly.png)
 
